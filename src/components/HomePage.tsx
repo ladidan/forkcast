@@ -1,15 +1,42 @@
 import { Link } from 'react-router-dom';
-import { networkUpgrades } from '../data/upgrades';
+import { networkUpgrades, NetworkUpgrade } from '../data/upgrades';
 import { getRecentCalls, isOneOffCall, callTypeNames, type CallType } from '../data/calls';
 import { eipsData } from '../data/eips';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { getProposalPrefix, getLaymanTitle, getInclusionStage } from '../utils/eip';
-import ThemeToggle from './ui/ThemeToggle';
-import UpgradeCarousel from './ui/UpgradeCarousel';
-import { Logo } from './ui/Logo';
+import UpgradeCard from './ui/UpgradeCard';
+import { recentDecisions, RecentDecision } from '../data/recent-decisions';
+import { StructuredDecisionContent } from './call/KeyDecisionsSection';
+import { EIP } from '../types/eip';
+
+// EIP lookup for the decision tooltips. Built once at module load.
+const homeEipMap: Map<number, EIP> = (() => {
+  const map = new Map<number, EIP>();
+  for (const eip of eipsData) map.set(eip.id, eip);
+  return map;
+})();
+
+// `recentDecisions` is sorted call-date desc. Take the run of decisions belonging to the
+// first (most recent) call so the home preview shows a coherent meeting at a glance.
+const lastCallDecisions: RecentDecision[] = (() => {
+  if (recentDecisions.length === 0) return [];
+  const first = recentDecisions[0];
+  return recentDecisions.filter(
+    (d) => d.callType === first.callType && d.callNumber === first.callNumber
+  );
+})();
+
+// Featured trio: most recent live, upcoming, next in planning. Computed once at module load
+// since networkUpgrades is a static import.
+const quickLinks: NetworkUpgrade[] = (() => {
+  const active = networkUpgrades.filter((u) => !u.disabled);
+  const previous = [...active].reverse().find((u) => u.status === 'Live');
+  const current = active.find((u) => u.status === 'Upcoming');
+  const future = active.find((u) => u.status === 'Planning' || u.status === 'Research');
+  return [previous, current, future].filter((u): u is NetworkUpgrade => u !== undefined);
+})();
 
 const HomePage = () => {
-  const upgrades = networkUpgrades;
   const recentCalls = getRecentCalls(5);
   const { trackLinkClick } = useAnalytics();
 
@@ -112,22 +139,34 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-12 text-center relative">
-          <div className="absolute top-0 right-0">
-            <ThemeToggle />
-          </div>
-          <Logo size="2xl" className="mb-4" />
-          <h2 className="text-xl font-light text-slate-700 dark:text-slate-300 tracking-tight">
+        <div className="mb-10 text-center">
+          <h1 className="text-2xl sm:text-3xl font-light text-slate-900 dark:text-slate-100 tracking-tight mb-2">
             Ethereum Upgrade Tracker
-          </h2>
+          </h1>
           <p className="text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
             See what's on the horizon and how it impacts you.
           </p>
         </div>
 
-        {/* Upgrades Carousel */}
-        <UpgradeCarousel upgrades={upgrades} />
+        {/* Quick Links: previous, current, future upgrades */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-medium text-slate-900 dark:text-slate-100">
+              Network Upgrades
+            </h2>
+            <Link
+              to="/upgrades"
+              className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+            >
+              View all upgrades →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {quickLinks.map((upgrade) => (
+              <UpgradeCard key={upgrade.id} upgrade={upgrade} />
+            ))}
+          </div>
+        </div>
 
         {/* Featured EIPs Section */}
         <div className="mt-12">
@@ -251,6 +290,69 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* Recent Decisions Section — single card showing the latest call's decisions */}
+        {lastCallDecisions.length > 0 && (() => {
+          const head = lastCallDecisions[0];
+          const callBadgeColor = callTypeBadgeColors[head.callType as CallType]
+            || 'bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300';
+          const callName = callTypeNames[head.callType as CallType] || head.callType.toUpperCase();
+          return (
+            <div className="mt-12">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-medium text-slate-900 dark:text-slate-100">
+                  Recent Decisions
+                </h2>
+                <Link
+                  to="/decisions"
+                  className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+                >
+                  View all decisions →
+                </Link>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <Link
+                  to={`/calls/${head.callType}/${head.callNumber}`}
+                  className="group flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded min-w-[3.5rem] text-center flex-shrink-0 ${callBadgeColor}`}>
+                      {head.callType.toUpperCase()}
+                    </span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                      {callName} #{head.callNumber}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-400">
+                      {head.date}
+                    </span>
+                    <svg className="w-5 h-5 text-slate-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+
+                <ul className="px-4 py-3 space-y-1.5 list-none">
+                  {lastCallDecisions.map((item, i) => {
+                    const isStructured = item.decision.type !== 'other';
+                    return (
+                      <li
+                        key={i}
+                        className="text-sm before:content-['→'] before:mr-2 before:text-slate-400 dark:before:text-slate-500 text-slate-600 dark:text-slate-400"
+                      >
+                        {isStructured
+                          ? <StructuredDecisionContent decision={item.decision} eipMap={homeEipMap} />
+                          : item.decision.original_text}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Planning Tools Section */}
         <div className="mt-12">
           <div className="flex items-center justify-between mb-4">
@@ -261,7 +363,7 @@ const HomePage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
-              to="/schedule"
+              to="/planner"
               className="group flex items-start gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-slate-700/20 hover:border-purple-300 dark:hover:border-purple-600"
             >
               <div className="flex-shrink-0 w-9 h-9 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -271,7 +373,7 @@ const HomePage = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-1">
-                  Schedule
+                  Planner
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   Plan fork timelines with adjustable milestones
@@ -293,10 +395,10 @@ const HomePage = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-1">
-                  Devnet Tracker
+                  Devnets
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Active devnets testing scaling or feature development
+                  Active devnet series and combined inclusion status
                 </p>
               </div>
               <svg className="w-5 h-5 text-slate-400 group-hover:text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

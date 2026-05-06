@@ -10,7 +10,6 @@ import {
 import { useAnalytics } from "../hooks/useAnalytics";
 import { eipsData } from "../data/eips";
 import { getPendingProposalsForFork, PendingProposal } from "../data/pending-proposals";
-import ThemeToggle from "./ui/ThemeToggle";
 
 const ChampionDisplay: React.FC<{ champions?: Champion[] }> = ({ champions }) => {
   if (!champions || champions.length === 0 || !champions.some(c => c.name)) return null;
@@ -677,7 +676,7 @@ const RankPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
       <div className="bg-white border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center h-auto py-3 sm:flex-row sm:justify-center sm:items-center sm:h-16 sm:py-0 relative">
             <button
               onClick={() => navigate("/upgrade/hegota")}
@@ -688,13 +687,10 @@ const RankPage: React.FC = () => {
             <h1 className="font-semibold text-slate-900 dark:text-slate-100 text-center truncate max-w-full overflow-hidden text-base sm:text-xl">
               Hegota Headliner Tier Maker
             </h1>
-            <div className="sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2">
-              <ThemeToggle />
-            </div>
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Tiers */}
           <div className="flex flex-col gap-4">
@@ -1144,7 +1140,7 @@ const RankPage: React.FC = () => {
       )}
 
       {/* Experiment Disclaimer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="text-center space-y-3">
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
             This is an experimental tool for expressing preferences. Rankings

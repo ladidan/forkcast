@@ -10,6 +10,7 @@ import { SchedulePage } from './components/schedule';
 import { EipPage } from './components/eip';
 import EipsIndexPage from './components/EipsIndexPage';
 import DevnetsIndexPage from './components/DevnetsIndexPage';
+import UpgradesIndexPage from './components/UpgradesIndexPage';
 import GlamsterdamUpgradePage from './components/GlamsterdamUpgradePage';
 import OverviewTab from './components/glamsterdam/OverviewTab';
 import StakeholdersTab from './components/glamsterdam/StakeholdersTab';
@@ -21,8 +22,10 @@ import DecisionsPage from './components/DecisionsPage';
 import { getUpgradeById } from './data/upgrades';
 import { useAnalytics } from './hooks/useAnalytics';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { CallSearchProvider } from './contexts/CallSearchContext';
 import ExternalRedirect from './components/ExternalRedirect';
 import { AnnouncementBanner } from './components/ui';
+import SiteNav from './components/ui/SiteNav';
 
 const stripTrailingSlashes = (p: string): string =>
   p === '/' ? '/' : p.replace(/\/+$/, '');
@@ -100,25 +103,29 @@ function App() {
   return (
     <ThemeProvider>
       <Router basename="">
-        <RedirectHandler />
-        <AnalyticsTracker />
-        <ScrollToTop />
-        <div className="scanlines" aria-hidden="true" />
-        <AnnouncementBanner
-          storageKey="epf7-banner-dismissed"
-          title="Ethereum Protocol Fellowship (EPF) Cohort 7 — Applications open until May 13"
-          links={[
-            {
-              url: 'https://blog.ethereum.org/2026/04/30/epf-7',
-              label: 'Learn more',
-              primary: true,
-            },
-          ]}
-        />
-        <main>
+        <CallSearchProvider>
+          <RedirectHandler />
+          <AnalyticsTracker />
+          <ScrollToTop />
+          <div className="scanlines" aria-hidden="true" />
+          <AnnouncementBanner
+            storageKey="epf7-banner-dismissed"
+            title="Ethereum Protocol Fellowship (EPF) Cohort 7 — Applications open until May 13"
+            links={[
+              {
+                url: 'https://blog.ethereum.org/2026/04/30/epf-7',
+                label: 'Learn more',
+                primary: true,
+              },
+            ]}
+          />
+          <SiteNav />
+          <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/upgrades" element={<UpgradesIndexPage />} />
+            <Route path="/planner" element={<SchedulePage />} />
+            <Route path="/schedule" element={<Navigate to="/planner" replace />} />
             <Route path="/upgrade/pectra" element={
               <PublicNetworkUpgradePage
                 forkName="Pectra"
@@ -144,9 +151,9 @@ function App() {
             <Route path="/upgrade/glamsterdam" element={<GlamsterdamUpgradePage />}>
               <Route index element={<OverviewTab />} />
               <Route path="stakeholders" element={<StakeholdersTab />} />
-              <Route path="candidates" element={<EipCandidatesTab />} />
-              <Route path="priority" element={<ClientPriorityTab />} />
-              <Route path="complexity" element={<TestComplexityTab />} />
+              <Route path="devnet-inclusion" element={<EipCandidatesTab />} />
+              <Route path="client-priority" element={<ClientPriorityTab />} />
+              <Route path="test-complexity" element={<TestComplexityTab />} />
             </Route>
             <Route path="/upgrade/hegota" element={
               <PublicNetworkUpgradePage
@@ -165,14 +172,18 @@ function App() {
             <Route path="/feedback" element={<ExternalRedirect />} />
             <Route path="/eips" element={<EipsIndexPage />} />
             <Route path="/eips/:id" element={<EipPage />} />
-            <Route path="/glamsterdam" element={<Navigate to="/upgrade/glamsterdam/candidates" replace />} />
-            <Route path="/glamsterdam/priority" element={<Navigate to="/upgrade/glamsterdam/priority" replace />} />
-            <Route path="/glamsterdam/complexity" element={<Navigate to="/upgrade/glamsterdam/complexity" replace />} />
-            <Route path="/priority" element={<Navigate to="/upgrade/glamsterdam/priority" replace />} />
-            <Route path="/complexity" element={<Navigate to="/upgrade/glamsterdam/complexity" replace />} />
-            <Route path="/upgrade/glamsterdam/devnets" element={<Navigate to="/upgrade/glamsterdam/candidates" replace />} />
-            <Route path="/upgrade/glamsterdam/devnets/priority" element={<Navigate to="/upgrade/glamsterdam/priority" replace />} />
-            <Route path="/upgrade/glamsterdam/devnets/complexity" element={<Navigate to="/upgrade/glamsterdam/complexity" replace />} />
+            <Route path="/glamsterdam" element={<Navigate to="/upgrade/glamsterdam" replace />} />
+            <Route path="/glamsterdam/priority" element={<Navigate to="/upgrade/glamsterdam/client-priority" replace />} />
+            <Route path="/glamsterdam/complexity" element={<Navigate to="/upgrade/glamsterdam/test-complexity" replace />} />
+            <Route path="/priority" element={<Navigate to="/upgrade/glamsterdam/client-priority" replace />} />
+            <Route path="/complexity" element={<Navigate to="/upgrade/glamsterdam/test-complexity" replace />} />
+            {/* Stale paths from prior tab layouts. */}
+            <Route path="/upgrade/glamsterdam/candidates" element={<Navigate to="/upgrade/glamsterdam/devnet-inclusion" replace />} />
+            <Route path="/upgrade/glamsterdam/priority" element={<Navigate to="/upgrade/glamsterdam/client-priority" replace />} />
+            <Route path="/upgrade/glamsterdam/complexity" element={<Navigate to="/upgrade/glamsterdam/test-complexity" replace />} />
+            <Route path="/upgrade/glamsterdam/devnets" element={<Navigate to="/upgrade/glamsterdam/devnet-inclusion" replace />} />
+            <Route path="/upgrade/glamsterdam/devnets/priority" element={<Navigate to="/upgrade/glamsterdam/client-priority" replace />} />
+            <Route path="/upgrade/glamsterdam/devnets/complexity" element={<Navigate to="/upgrade/glamsterdam/test-complexity" replace />} />
             <Route path="/devnets/:id" element={<DevnetSpecPage />} />
             <Route path="/devnets" element={<DevnetsIndexPage />} />
             <Route path="/decisions" element={<DecisionsPage />} />
@@ -180,6 +191,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
+        </CallSearchProvider>
       </Router>
     </ThemeProvider>
   );

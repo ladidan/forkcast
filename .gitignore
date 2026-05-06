@@ -24,6 +24,9 @@ public/search-corpus.meta.json
 # Compiled EIP spec search index (generated from public/eips/*.md)
 public/eip-spec-index.json
 
+# Compiled recent decisions (generated from public/artifacts/{acdc,acde,acdt}/*)
+src/data/recent-decisions.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,15 +4,14 @@ import YouTube, { YouTubeProps } from 'react-youtube';
 import ChatLog from './ChatLog';
 import TldrSummary from './TldrSummary';
 import CallSearch from './CallSearch';
-import ThemeToggle from '../ui/ThemeToggle';
-import { Logo } from '../ui/Logo';
 import { protocolCalls, callTypeNames, isOneOffCall, type CallType } from '../../data/calls';
 import { breakouts, breakoutLabels, type Breakout, type BreakoutKind } from '../../data/breakouts';
 import { fetchUpcomingCalls } from '../../domain/calls/upcomingCalls';
 import { useMetaTags } from '../../hooks/useMetaTags';
 import { eipsData } from '../../data/eips';
 import { EIP, ForkRelationship, KeyDecision } from '../../types/eip';
-import { isSearchHotkey, getSearchShortcutLabel } from '../search/searchShortcuts';
+import { isSearchHotkey } from '../search/searchShortcuts';
+import { useCallSearch } from '../../contexts/CallSearchContext';
 
 // Mapping of breakout call types to their associated EIP IDs
 const BREAKOUT_EIP_MAP: Record<string, number> = {
@@ -326,6 +325,15 @@ const CallPage: React.FC = () => {
   const [selectedSearchResult, setSelectedSearchResult] = useState<{timestamp: string, text: string, type: string} | null>(null);
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { setOpenSearch } = useCallSearch();
+
+  // Expose the call-scoped search opener to the global SiteNav so a magnifier
+  // icon can appear next to ThemeToggle while a call is open. Cleared on unmount.
+  useEffect(() => {
+    setOpenSearch(() => setIsSearchOpen(true));
+    return () => setOpenSearch(null);
+  }, [setOpenSearch]);
+
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(
     () => window.matchMedia('(min-width: 1024px)').matches
@@ -334,7 +342,6 @@ const CallPage: React.FC = () => {
     () => window.matchMedia(TALL_SCREEN_QUERY).matches
   );
 
-  const searchShortcut = getSearchShortcutLabel();
   const isDesktopExpanded = isLargeScreen && isVideoExpanded;
 
   useEffect(() => {
@@ -874,16 +881,6 @@ const CallPage: React.FC = () => {
   if (!callData) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-        {/* Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2">
-            <div className="flex items-center justify-between">
-              <Logo size="sm" />
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-
         {/* Content */}
         <div className="max-w-4xl mx-auto px-6 py-16">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-12 shadow-sm text-center">
@@ -1350,67 +1347,6 @@ const CallPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-      {/* Compact Header */}
-      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
-        <div className={layout.header}>
-          {/* Mobile Layout */}
-          <div className="sm:hidden flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Logo size="xs" />
-              <span className="text-xs text-slate-600 dark:text-slate-400">
-                {headerLabel}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                to="/calls"
-                className="text-xs text-slate-600 dark:text-slate-400"
-              >
-                ← Back
-              </Link>
-              <ThemeToggle />
-            </div>
-          </div>
-
-          {/* Desktop Layout */}
-          <div className="hidden sm:flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Logo size="sm" />
-              <div className="text-slate-300 dark:text-slate-600">|</div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {headerLabel}
-                </h1>
-                {callData.date && (
-                  <span className="text-sm text-slate-500 dark:text-slate-400">• {callData.date}</span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/calls"
-                className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
-              >
-                ← All Calls
-              </Link>
-              <button
-                onClick={() => {
-                  setIsSearchOpen(true);
-                  handlePauseVideo();
-                }}
-                className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
-                aria-label="Search"
-                title={`Search (${searchShortcut})`}
-              >
-                <svg className="w-5 h-5 text-slate-700 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Mobile Search Button - Fixed Bottom Right */}
       <button
