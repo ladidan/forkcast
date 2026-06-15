@@ -1,6 +1,6 @@
 {
   "repo": "ethereum/execution-specs",
-  "fetchedAt": "2026-06-14T09:01:37.940066+00:00",
+  "fetchedAt": "2026-06-15T11:43:56.599957+00:00",
   "eips": {
     "2780": {
       "testFiles": 4,
@@ -33,7 +33,7 @@
     "7928": {
       "testFiles": 11,
       "testFunctions": 159,
-      "testCases": 1972,
+      "testCases": 1976,
       "branch": "forks/amsterdam",
       "directoryName": "eip7928_block_level_access_lists"
     },
