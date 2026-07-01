@@ -1,6 +1,6 @@
 {
   "repo": "ethereum/execution-specs",
-  "fetchedAt": "2026-06-30T08:55:15.573765+00:00",
+  "fetchedAt": "2026-07-01T09:28:41.944507+00:00",
   "eips": {
     "2780": {
       "testFiles": 4,
@@ -85,6 +85,13 @@
       "testCases": 1296,
       "branch": "eips/amsterdam/eip-8246",
       "directoryName": "eip8246_selfdestruct_no_burn"
+    },
+    "8282": {
+      "testFiles": 2,
+      "testFunctions": 2,
+      "testCases": 40,
+      "branch": "eips/amsterdam/eip-8282",
+      "directoryName": "eip8282_builder_execution_requests"
     }
   }
 }
