@@ -1,6 +1,6 @@
 {
   "repo": "ethereum/execution-specs",
-  "fetchedAt": "2026-09-27T11:00:17.942540+00:00",
+  "fetchedAt": "2026-09-28T12:16:46.949433+00:00",
   "eips": {
     "2780": {
       "testFiles": 10,
@@ -88,8 +88,8 @@
     },
     "8070": {
       "testFiles": 2,
-      "testFunctions": 7,
-      "testCases": 145,
+      "testFunctions": 9,
+      "testCases": 148,
       "branch": "forks/amsterdam",
       "directoryName": "eip8070_sparse_blobpool"
     },
