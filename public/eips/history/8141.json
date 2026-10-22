@@ -2,6 +2,13 @@
   "eipId": 8141,
   "commits": [
     {
+      "sha": "46005d745a5d921702f12d64a1b85e712e2b6051",
+      "date": "2026-10-22T00:27:07Z",
+      "message": "Update EIP-8141: commit to elided signature lengths (#12502)",
+      "author": "lightclient",
+      "prNumber": 12502
+    },
+    {
       "sha": "af3a7802c8ea516f717c6013e27d0f529046f007",
       "date": "2026-10-09T16:58:06Z",
       "message": "Update EIP-8141: define the validation prefix and execution body under Behavior",
